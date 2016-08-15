@@ -27,16 +27,20 @@ class Zhihu_crawler():
     def send_request(self):
         #关注者的url
         followees_url = self.url + '/followees'
+
         #发起请求
+        #避免Https的证书验证
+        r = requests.get(followees_url, cookies = self.cookies, headers = self.headers, verify = True)
+
         try:
-            #避免Https的证书验证
-            r = requests.get(followees_url, cookies = self.cookies, headers = self.headers, verify = False)
-        except:
-            print "requests error! " + r.status_code
-            return
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            print e.message
+        except requests.ConnectionError as e:
+            print e.message
 
         content = r.text
-        if r.status_code == 200:
+        if r.status_code == requests.codes.ok:
             self.parse_users_content(content)
             print "requests success!"
 
