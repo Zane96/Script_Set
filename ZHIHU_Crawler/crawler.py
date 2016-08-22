@@ -47,10 +47,10 @@ class Zhihu_crawler():
     #判断是否数据存在
     def judge_data_have(self, name, datas):
         if datas:
-            print datas[0]
+            #print datas[0]
             return datas[0]
         else:
-            print name + " not exist!"
+            #print name + " not exist!"
             return
 
     #解析数据
@@ -68,6 +68,7 @@ class Zhihu_crawler():
         self.user_employment=''
         self.user_employment_extra=''
         self.user_intro=''
+        self.followees_urls=''
 
         tree = etree.HTML(html_source)
 
@@ -89,6 +90,8 @@ class Zhihu_crawler():
         self.user_employment_extra = self.judge_data_have("公司", tree.xpath('//span[@class = "position item"]/@title'))
         self.user_intro = self.judge_data_have("简介", tree.xpath('//div[@class = "bio ellipsis"]/@title'))
 
+        self.followees_urls = tree.xpath('//a[@class = "zg-link author-link"]/@href')
+
         #打印最终信息
     def print_data_out(self):
         print "*"*60
@@ -103,6 +106,10 @@ class Zhihu_crawler():
         print "教育:%s/%s".decode('utf-8') % (self.user_education_school,self.user_education_subject)
         print "用户信息:%s".decode('utf-8') % self.user_intro
         print "*"*60
+
+    #获得下一个关注用户的信息url
+    def get_followees_url(self):
+        return self.followees_urls
 
 
 
