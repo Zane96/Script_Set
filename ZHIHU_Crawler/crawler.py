@@ -4,11 +4,13 @@ __author__ = 'Zane'
 
 import requests
 from lxml import etree
+from redis_queue import RedisQueue
 
 #爬取的主要基类
 class Zhihu_crawler():
 
     def __init__(self, url):
+        self.queue = RedisQueue('zhihu', host='localhost', port=6379, db=0)
         self.url = url
         self.headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
                         , "Host":"www.zhihu.com"
@@ -75,10 +77,11 @@ class Zhihu_crawler():
         self.user_name = self.judge_data_have("姓名", tree.xpath('//a[@class = "name"]/text()'))
         self.user_location = self.judge_data_have("位置", tree.xpath('//span[@class = "location item"]/@title'))
         self.user_gender = self.judge_data_have("性别", tree.xpath('//span[@class = "item gender"]/i/@class'))
-        if 'male' in self.user_gender and self.user_gender:
-            self.user_gender = 'male'
-        elif 'female' in self.user_gender and self.user_gender:
-            self.user_gender = 'female'
+        if self.user_gender:
+            if 'male' in self.user_gender:
+                self.user_gender = 'male'
+            elif 'female' in self.user_gender:
+                self.user_gender = 'female'
 
         self.user_followees = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[0]
         self.user_followers = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[1]
@@ -90,7 +93,13 @@ class Zhihu_crawler():
         self.user_employment_extra = self.judge_data_have("公司", tree.xpath('//span[@class = "position item"]/@title'))
         self.user_intro = self.judge_data_have("简介", tree.xpath('//div[@class = "bio ellipsis"]/@title'))
 
+        #添加到队列里面
         self.followees_urls = tree.xpath('//a[@class = "zg-link author-link"]/@href')
+        for url in self.followees_urls:
+            url = url.replace("https", "http")
+            self.queue.put(url)
+
+        self.print_data_out()
 
         #打印最终信息
     def print_data_out(self):
@@ -107,9 +116,9 @@ class Zhihu_crawler():
         print "用户信息:%s".decode('utf-8') % self.user_intro
         print "*"*60
 
-    #获得下一个关注用户的信息url
-    def get_followees_url(self):
-        return self.followees_urls
+    #返回队列
+    def get_queue(self):
+        return self.queue
 
 
 
