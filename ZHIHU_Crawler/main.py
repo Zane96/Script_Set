@@ -4,7 +4,7 @@ __author__ = 'Zane'
 import crawler
 from multiprocessing import Pool
 import gevent
-from redis_queue import RedisQueue
+import time
 import multiprocessing
 import gevent.monkey
 gevent.monkey.patch_socket()
@@ -31,7 +31,7 @@ def start_crawler(url):
 
 #获得一个新的用户信息
 def creat_new_user(url):
-
+    time.sleep(3)
     new_user = crawler.Zhihu_crawler(url)
     new_user.send_request()
 
@@ -53,7 +53,7 @@ def process_workder():
 
 if __name__ == "__main__":
     pool = Pool(multiprocessing.cpu_count() * 2)
-    zhihu_crawler = crawler.Zhihu_crawler("https://www.zhihu.com/people/xu-zhi-75-83")
+    zhihu_crawler = crawler.Zhihu_crawler("https://www.zhihu.com/people/nan-jue-tu")
     zhihu_crawler.send_request()
     queue = zhihu_crawler.get_queue()
 

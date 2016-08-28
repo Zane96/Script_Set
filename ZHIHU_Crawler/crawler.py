@@ -5,6 +5,7 @@ __author__ = 'Zane'
 import requests
 from lxml import etree
 from redis_queue import RedisQueue
+from mongo_db import Zhihu_User_Data
 
 #爬取的主要基类
 class Zhihu_crawler():
@@ -14,30 +15,55 @@ class Zhihu_crawler():
         self.url = url
         self.headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"
                         , "Host":"www.zhihu.com"
-                        , "Refer":"www.zhihu.com"}
+                        , "Refer":"www.zhihu.com"
+                        , "Accept-Language":"zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4"
+                        , "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                        , "Accept-Encoding":"gzip, deflate, sdch, br"
+                        , "Cache-Control":"max-age=0"
+                        , "Connection":"keep-alive"}
 
         #cookie
-        self.cookies={"z_c0":'"Mi4wQUJES1hxTE1SUWdBWUVET3JKT2pDUmNBQUFCaEFsVk5TM1BXVndBME9mLXQ4STM2bWFlM1JJOXF0c1pld0tCbTh3|1471179482|287cc1b9a28f7d338fd89d6771cd4590b764cce9"',
-                "unlock_ticket":'QUZDQUp3czV3QWtYQUFBQVlRSlZUZnBxQ2xmSWNXX3NuVXo3SVJleUM5Uy1BLUpEdXJEcEpBPT0',
-                "login":'"ZTEwOGU2NjhiNWE5NGQyOWE4ODY0YjMzMTg2MGUyZjU=|1471080002|4ebda99342dafce4f0fa2f9873b1f9aa152db9ee"',
-                "n_c":"1",
-                "q_c1":"3b3a3dccecf1499ea32a0b2da9be35ec|1470149980000|1445741536000",
-                "l_cap_id":'"OGRmYmZhNWUxN2MwNDE4MWI4MDE5MzIyZDQwZjE5NDE=|1471080000|a826857321160d83eee323a9ab1dc119c46ec95d"',
-                "d_c0":'"AGBAzqyTowmPTpYh7UrYZSjcr43LFX006Tw=|1461248461"',
-                "cap_id":'"MTNhNDQxODNmYjQ5NGE1YmIzM2Y5NmMzNDI5YzZkYTA=|1471080000|88bbcb97639ddfd83e41a37d73c1a6fe3240027b"'}
+        self.cookies={"_zap":"aaf2a75d-0a1b-4863-b8a0-23ff0f4a9002"
+                    , "_za":"e73a8db5-0824-4c36-b6a2-7a5378a046f7"
+                    , "udid":'"AFAAY31blAmPTta9QIqu7S6lUdEK97RWDgg=|1457941793"'
+                    , "d_c0":'"AGBAzqyTowmPTpYh7UrYZSjcr43LFX006Tw=|1461248461"'
+                    , "_zap":"267bc327-098d-4d7c-85cb-3cfd13cd2e8e"
+                    , "q_c1":"3b3a3dccecf1499ea32a0b2da9be35ec|1470149980000|1445741536000"
+                    , "_xsrf":"8a812fd7745e54a8e8ab4ed815fa9001"
+                    , "l_cap_id":'"YzQ3YzNhNzUxZjBlNDAzNTgwM2FhNzdlODI5NjAxZjY=|1472298711|d67a5a1c7e5fb41cfe2715e389c74ebc6132007d"'
+                    , "cap_id":'"ZGQwYTE0MTM3ODk0NDUzOGFkM2RiNGYxYTNmYTc1YTM=|1472298711|8fd9f406e4786a9ca56227b61e7c6a2a5c0f4b42"'
+                    , "login":'"ZDlmZjdkMTA4NTkwNDA0MDgyNTc0ZDczNWYyOWZiZTc=|1472298742|da8a20e1922c8dac52ec4a98bca68ffed83ce46c"'
+                    , "n_c":'1'
+                    , "s-t":"autocomplete"
+                    , "s-q":"volley%2Cretrofit%2Cokhttp"
+                    , "s-i":"1"
+                    , "sid":"6vahoruo"
+                    , "a_t":'"2.0AEAAukjbcgoXAAAATjPpVwBAALpI23IKAGBAzqyTowkXAAAAYQJVTfYL6VcAoZ3PJyuvTIR4Yl3RS9B_tCnMwHxnX7iDfjl2Ve7xk-Nk6RdV68h4_A=="'
+                    , "z_c0":"Mi4wQUVBQXVramJjZ29BWUVET3JKT2pDUmNBQUFCaEFsVk45Z3ZwVndDaG5jOG5LNjlNaEhoaVhkRkwwSC0wS2N6QWZB|1472308814|21bb41cc3844239f4582374fc850ced4a5e8c564"
+                    , "__utma":"51854390.226515891.1472287250.1472298703.1472307196.4"
+                    , "__utmc":"51854390"
+                    , "__utmz":"51854390.1472296126.2.2.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)"
+                    , "__utmv":"51854390.100--|2=registration_date=20160827=1^3=entry_date=20151025=1"}
 
     def send_request(self):
         #关注者的url
         followees_url = self.url + '/followees'
 
+        session = requests.session()
+        session.proxies = {
+            "http": "http://124.88.67.17.251:8685",
+            "https": "http://223.67.136.218:8920",
+        }
+
         #发起请求
         #避免Https的证书验证
+
         r = requests.get(followees_url, cookies = self.cookies, headers = self.headers, verify = True)
 
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
-            print e.message
+            print e.message + ' HttpError'
         except requests.ConnectionError as e:
             print e.message
 
@@ -53,7 +79,7 @@ class Zhihu_crawler():
             return datas[0]
         else:
             #print name + " not exist!"
-            return
+            return ''
 
     #解析数据
     def parse_users_content(self, html_source):
@@ -78,15 +104,21 @@ class Zhihu_crawler():
         self.user_location = self.judge_data_have("位置", tree.xpath('//span[@class = "location item"]/@title'))
         self.user_gender = self.judge_data_have("性别", tree.xpath('//span[@class = "item gender"]/i/@class'))
         if self.user_gender:
-            if 'male' in self.user_gender:
-                self.user_gender = 'male'
-            elif 'female' in self.user_gender:
+            if 'female' in self.user_gender:
                 self.user_gender = 'female'
+            elif 'male' in self.user_gender:
+                self.user_gender = 'male'
 
-        self.user_followees = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[0]
-        self.user_followers = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[1]
-        self.user_be_agreed = tree.xpath('//div[@class = "zm-profile-header-info-list"]//strong/text()')[0]
-        self.user_be_thanked = tree.xpath('//div[@class = "zm-profile-header-info-list"]//strong/text()')[1]
+        followees = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')
+        if followees:
+            self.user_followees = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[0]
+            self.user_followers = tree.xpath('//div[@class = "zu-main-sidebar"]//strong/text()')[1]
+
+        stats = tree.xpath('//div[@class = "zm-profile-header-info-list"]//strong/text()')
+        if stats:
+            self.user_be_agreed = tree.xpath('//div[@class = "zm-profile-header-info-list"]//strong/text()')[0]
+            self.user_be_thanked = tree.xpath('//div[@class = "zm-profile-header-info-list"]//strong/text()')[1]
+
         self.user_education_school = self.judge_data_have("学校", tree.xpath('//span[@class = "education item"]/a/@title'))
         self.user_education_subject = self.judge_data_have("学科", tree.xpath('//span[@class = "education-extra item"]/a/@title'))
         self.user_employment = self.judge_data_have("公司", tree.xpath('//span[@class = "employment item"]/@title'))
@@ -96,7 +128,7 @@ class Zhihu_crawler():
         #添加到队列里面
         self.followees_urls = tree.xpath('//a[@class = "zg-link author-link"]/@href')
         for url in self.followees_urls:
-            url = url.replace("https", "http")
+            #url = url.replace("https", "http")
             self.queue.put(url)
 
         self.print_data_out()
@@ -115,6 +147,28 @@ class Zhihu_crawler():
         print "教育:%s/%s".decode('utf-8') % (self.user_education_school,self.user_education_subject)
         print "用户信息:%s".decode('utf-8') % self.user_intro
         print "*"*60
+
+        self.save_in_mongodb()
+
+    #存储到mongodb数据库里面
+    def save_in_mongodb(self):
+        new_data = Zhihu_User_Data(
+            user_name = self.user_name,
+            user_gender = self.user_gender,
+            user_location = self.user_location,
+            user_followees = self.user_followees,
+            user_followers = self.user_followers,
+            user_be_agreed = self.user_be_agreed,
+            user_be_thanked = self.user_be_thanked,
+            user_education_school = self.user_education_school,
+            user_education_subject = self.user_education_subject,
+            user_employment = self.user_employment,
+            user_employment_extra = self.user_employment_extra,
+            user_intro = self.user_intro,
+            followees_urls = self.followees_urls
+        )
+        new_data.save()
+
 
     #返回队列
     def get_queue(self):
