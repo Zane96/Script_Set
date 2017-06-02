@@ -3,6 +3,7 @@ const Koa = require('koa');
 const controller = require('./controller');
 const bodyParser = require('koa-bodyparser');
 const app = new Koa();
+const pet_db = require(__dirname + '/' + 'db' + '/' + 'pet_dao');
 
 
 app.use(async (ctx, next) => {
@@ -14,6 +15,9 @@ app.use(async (ctx, next) => {
 // 在端口3000监听:
 app.use(bodyParser());
 app.use(controller());
+
+pet_db['insert'];
+pet_db['findAll'];
 
 app.listen(8080);
 
