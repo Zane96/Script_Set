@@ -1,20 +1,22 @@
 {
-    "name": "hello-koa",
+    "name": "test_koa",
     "version": "1.0.0",
-    "description": "Hello Koa 2 example with async",
+    "description": "testkoa",
     "main": "app.js",
     "scripts": {
         "start": "node --use_strict app.js"
     },
     "keywords": [
         "koa",
-        "async"
+        "mysql",
+        "nunkucks",
+        "ws"
     ],
-    "author": "Michael Liao",
+    "author": "Zane Xu",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/michaelliao/learn-javascript.git"
+        "url": ""
     },
     "dependencies": {
         "koa": "2.0.0",
@@ -24,6 +26,7 @@
         "mime": "1.3.4",
         "mz": "2.4.0",
         "sequelize": "3.24.1",
-        "mysql": "2.11.1"
+        "mysql": "2.11.1",
+        "ws": "3.0.0"
     }
 }

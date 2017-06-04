@@ -1,6 +1,6 @@
 //Pet数据表的DAO类
 
-var Pet = require('./db_controller')['pet'];
+var Pet = require('./db_controller').Pet;
 var now = Date.now();
 
 //insert
@@ -40,7 +40,7 @@ var findAll = async () => {
     })
     console.log(`find ${pets.length} pets:`);
     for (let p of pets) {
-        console.log(JSON.stringify(p));
+        console.log('result------ ' + JSON.stringify(p));
     }
     return pets;
 };
@@ -60,7 +60,7 @@ var save = async () => {
 };
 
 module.exports = {
-    'insert' : insert,
-    'findAll' : findAll(),
-    'save' : save
+    insert : insert,
+    findAll : findAll,
+    save : save
 };

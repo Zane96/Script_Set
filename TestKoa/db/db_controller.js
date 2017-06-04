@@ -30,5 +30,5 @@ var Pet = sequelize.define('pet', {
 });
 
 module.exports = {
-    'pet' : Pet
+    Pet : Pet
 };
