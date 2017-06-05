@@ -1,22 +1,25 @@
 //Pet数据表的DAO类
 
-var Pet = require('./db_controller').Pet;
+var sequelize = require('./db_controller').sequelize;
 var now = Date.now();
 
-//insert
+var Pet = sequelize.define('pet', {
+        id: {
+            type: Sequelize.STRING(50),
+            primaryKey: true
+        },
+        name: Sequelize.STRING(100),
+        gender: Sequelize.BOOLEAN,
+        birth: Sequelize.STRING(10),
+        createdAt: Sequelize.BIGINT,
+        updatedAt: Sequelize.BIGINT,
+        version: Sequelize.BIGINT
+        }, 
+    {
+        timestamps: false
+});
 
-// var insert = async () => {
-//     var dog = await Pet.create({
-//         id: 'd-' + now,
-//         name: 'Zane',
-//         gender: false,
-//         birth: '2008-08-08',
-//         createdAt: now,
-//         updatedAt: now,
-//         version: 0
-//     });
-//     console.log('created: ' + JSON.stringify(dog));
-// };
+//insert
 var insert = Pet.create({
     id: 'g-' + now,
     name: 'Zane',
